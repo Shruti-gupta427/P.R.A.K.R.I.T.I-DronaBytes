@@ -1,4 +1,4 @@
-const API_URL = "https://reprints-avon-computational-monkey.trycloudflare.com";  // your tunnel URL
+const API_URL = "https://cams-bull-congratulations-julia.trycloudflare.com";  // your tunnel URL
 const SECRET = "ecobot123";
 
 async function askBot() {
