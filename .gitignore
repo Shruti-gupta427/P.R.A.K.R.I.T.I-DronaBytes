@@ -1,0 +1,55 @@
+# Virtual environment
+venv/
+.venv/
+
+# Python cache and compiled files
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Environment variables and secrets
+.env
+.env.*
+
+# IDE / Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# System files
+.DS_Store
+Thumbs.db
+
+# Logs and temp files
+*.log
+logs/
+tmp/
+*.tmp
+
+# Build artifacts
+dist/
+build/
+*.egg-info/
+
+# Jupyter notebooks checkpoints (if any)
+.ipynb_checkpoints/
+
+# Datasets or large local files (optional)
+data/
+*.csv
+*.tsv
+*.jsonl
+*.zip
+*.tar
+*.gz
+
+# Frontend build (if using React/Vue)
+node_modules/
+frontend/dist/
+frontend/build/
+
+# Cache from tools
+.cache/
+pytest_cache/
