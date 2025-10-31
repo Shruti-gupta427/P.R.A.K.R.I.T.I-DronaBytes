@@ -1,4 +1,8 @@
+<<<<<<< HEAD
 const API_URL = "https://reprints-avon-computational-monkey.trycloudflare.com";  // your tunnel URL
+=======
+const API_URL = "https://cams-bull-congratulations-julia.trycloudflare.com";  // your tunnel URL
+>>>>>>> 5ead8495559a956b7f9250f3b7dc0a0b3dcb4539
 const SECRET = "ecobot123";
 
 async function askBot() {
