@@ -5,7 +5,7 @@ async function askBot() {
     const q = document.getElementById("question").value;
     if (!q) return;
 
-    const res = await fetch(${API_URL}/ask, {
+    const res = await fetch(`${API_URL}/ask`, {   // ✅ fixed: added backticks
         method: "POST",
         headers: {
             "Content-Type": "application/json",
