@@ -1,23 +1,27 @@
-const express = require('express');
-const Complaint = require('../models/Complaint');
-const User = require('../models/User');
-const auth = require('../middleware/auth');
+const express = require("express");
+const Complaint = require("../models/Complaint");
+const User = require("../models/User");
+const Notification = require("../models/Notification");
+const auth = require("../middleware/auth");
 
 const router = express.Router();
 
 // Get all complaints
-router.get('/', async (req, res) => {
+router.get("/", async (req, res) => {
   try {
     const { status, category, priority, limit = 20, page = 1 } = req.query;
-    
+
     const filter = {};
     if (status) filter.status = status;
     if (category) filter.category = category;
     if (priority) filter.priority = priority;
 
     const complaints = await Complaint.find(filter)
-      .populate('reportedBy', 'username profile.firstName profile.lastName')
-      .populate('assignedTo.officer', 'username profile.firstName profile.lastName')
+      .populate("reportedBy", "username profile.firstName profile.lastName")
+      .populate(
+        "assignedTo.officer",
+        "username profile.firstName profile.lastName"
+      )
       .sort({ createdAt: -1 })
       .limit(limit * 1)
       .skip((page - 1) * limit);
@@ -32,95 +36,117 @@ router.get('/', async (req, res) => {
           total,
           page: parseInt(page),
           pages: Math.ceil(total / limit),
-          limit: parseInt(limit)
-        }
-      }
+          limit: parseInt(limit),
+        },
+      },
     });
   } catch (error) {
-    console.error('Get complaints error:', error);
+    console.error("Get complaints error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
 
 // Get complaint by ID
-router.get('/:id', async (req, res) => {
+router.get("/:id", async (req, res) => {
   try {
     const complaint = await Complaint.findById(req.params.id)
-      .populate('reportedBy', 'username profile.firstName profile.lastName')
-      .populate('assignedTo.officer', 'username profile.firstName profile.lastName')
-      .populate('timeline.updatedBy', 'username profile.firstName profile.lastName');
+      .populate("reportedBy", "username profile.firstName profile.lastName")
+      .populate(
+        "assignedTo.officer",
+        "username profile.firstName profile.lastName"
+      )
+      .populate(
+        "timeline.updatedBy",
+        "username profile.firstName profile.lastName"
+      );
 
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
     res.json({
       success: true,
-      data: { complaint }
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Get complaint error:', error);
+    console.error("Get complaint error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
 
 // Create new complaint
-router.post('/', auth, async (req, res) => {
+router.post("/", auth, async (req, res) => {
   try {
     const complaintData = {
       ...req.body,
       reportedBy: req.userId,
-      priority: 'medium' // Will be calculated based on severity and category
+      priority: "medium", // Will be calculated based on severity and category
     };
 
     const complaint = new Complaint(complaintData);
-    
+
     // Calculate priority
     complaint.priority = complaint.calculatePriority();
-    
+
     await complaint.save();
-    
+    // Notify all government/admin users
+    const governmentUsers = await User.find({
+      role: { $in: ["admin", "government"] },
+    });
+
+    const notifications = governmentUsers.map((user) => ({
+      recipient: user._id,
+      type: "complaint_submitted",
+      title: "New Complaint Submitted",
+      message: `A new complaint "${complaint.title}" has been reported by ${
+        req.user.username || "a citizen"
+      }.`,
+      complaint: complaint._id,
+    }));
+
+    await Notification.insertMany(notifications);
+
     // Update timeline
     await complaint.updateTimeline(
-      'pending',
-      'Complaint submitted successfully',
+      "pending",
+      "Complaint submitted successfully",
       req.userId
     );
 
     res.status(201).json({
       success: true,
-      message: 'Complaint submitted successfully',
-      data: { complaint }
+      message: "Complaint submitted successfully",
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Create complaint error:', error);
+    console.error("Create complaint error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
 
 // Update complaint status (Government/Admin only)
-router.put('/:id/status', auth, async (req, res) => {
+router.put("/:id/status", auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    if (!user || !['admin', 'government'].includes(user.role)) {
+    if (!user || !["admin", "government"].includes(user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin or Government role required.'
+        message: "Access denied. Admin or Government role required.",
       });
     }
 
@@ -130,40 +156,40 @@ router.put('/:id/status', auth, async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
     complaint.status = status;
-    
+
     // Update government response based on status
-    if (status === 'acknowledged') {
+    if (status === "acknowledged") {
       complaint.governmentResponse.acknowledgment = {
         received: true,
         receivedAt: new Date(),
         message: description,
-        officer: user.username
+        officer: user.username,
       };
-    } else if (status === 'in_progress') {
+    } else if (status === "in_progress") {
       complaint.governmentResponse.action = {
         taken: true,
         description,
-        takenAt: new Date()
+        takenAt: new Date(),
       };
-    } else if (status === 'resolved') {
+    } else if (status === "resolved") {
       complaint.governmentResponse.resolution = {
         resolved: true,
         resolvedAt: new Date(),
-        description
+        description,
       };
-      
+
       // Award points to reporter
       const reporter = await User.findById(complaint.reportedBy);
       if (reporter) {
         reporter.profile.stats.pointsEarned += complaint.reward.points || 50;
         reporter.profile.stats.complaintsSubmitted += 1;
         await reporter.save();
-        
+
         complaint.reward.awarded = true;
         complaint.reward.awardedAt = new Date();
       }
@@ -171,30 +197,36 @@ router.put('/:id/status', auth, async (req, res) => {
 
     await complaint.updateTimeline(status, description, req.userId);
     await complaint.save();
-
+    await Notification.create({
+      recipient: complaint.reportedBy,
+      type: "complaint_resolved",
+      title: "Complaint Resolved",
+      message: `Your complaint "${complaint.title}" has been resolved successfully.`,
+      complaint: complaint._id,
+    });
     res.json({
       success: true,
-      message: 'Complaint status updated successfully',
-      data: { complaint }
+      message: "Complaint status updated successfully",
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Update complaint status error:', error);
+    console.error("Update complaint status error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
 
 // Assign complaint to officer (Government/Admin only)
-router.put('/:id/assign', auth, async (req, res) => {
+router.put("/:id/assign", auth, async (req, res) => {
   try {
     const user = await User.findById(req.userId);
-    if (!user || !['admin', 'government'].includes(user.role)) {
+    if (!user || !["admin", "government"].includes(user.role)) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. Admin or Government role required.'
+        message: "Access denied. Admin or Government role required.",
       });
     }
 
@@ -204,60 +236,70 @@ router.put('/:id/assign', auth, async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
     complaint.assignedTo = {
       department,
       officer: officerId,
-      assignedAt: new Date()
+      assignedAt: new Date(),
     };
 
     await complaint.updateTimeline(
-      'assigned',
+      "assigned",
       `Complaint assigned to ${department}`,
       req.userId
     );
+    await Notification.create({
+      recipient: officerId,
+      type: "complaint_assigned",
+      title: "New Complaint Assigned",
+      message: `You have been assigned a new complaint in the ${department} department.`,
+      complaint: complaint._id,
+    });
 
     res.json({
       success: true,
-      message: 'Complaint assigned successfully',
-      data: { complaint }
+      message: "Complaint assigned successfully",
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Assign complaint error:', error);
+    console.error("Assign complaint error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
 
 // Get user's complaints
-router.get('/my-complaints', auth, async (req, res) => {
+router.get("/my-complaints", auth, async (req, res) => {
   try {
     const complaints = await Complaint.find({ reportedBy: req.userId })
-      .populate('assignedTo.officer', 'username profile.firstName profile.lastName')
+      .populate(
+        "assignedTo.officer",
+        "username profile.firstName profile.lastName"
+      )
       .sort({ createdAt: -1 });
 
     res.json({
       success: true,
-      data: { complaints }
+      data: { complaints },
     });
   } catch (error) {
-    console.error('Get user complaints error:', error);
+    console.error("Get user complaints error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
 
 // Add feedback to resolved complaint
-router.post('/:id/feedback', auth, async (req, res) => {
+router.post("/:id/feedback", auth, async (req, res) => {
   try {
     const { rating, comment } = req.body;
     const complaint = await Complaint.findById(req.params.id);
@@ -265,43 +307,44 @@ router.post('/:id/feedback', auth, async (req, res) => {
     if (!complaint) {
       return res.status(404).json({
         success: false,
-        message: 'Complaint not found'
+        message: "Complaint not found",
       });
     }
 
     if (complaint.reportedBy.toString() !== req.userId.toString()) {
       return res.status(403).json({
         success: false,
-        message: 'Access denied. You can only provide feedback for your own complaints.'
+        message:
+          "Access denied. You can only provide feedback for your own complaints.",
       });
     }
 
-    if (complaint.status !== 'resolved') {
+    if (complaint.status !== "resolved") {
       return res.status(400).json({
         success: false,
-        message: 'Feedback can only be provided for resolved complaints'
+        message: "Feedback can only be provided for resolved complaints",
       });
     }
 
     complaint.feedback = {
       rating,
       comment,
-      submittedAt: new Date()
+      submittedAt: new Date(),
     };
 
     await complaint.save();
 
     res.json({
       success: true,
-      message: 'Feedback submitted successfully',
-      data: { complaint }
+      message: "Feedback submitted successfully",
+      data: { complaint },
     });
   } catch (error) {
-    console.error('Submit feedback error:', error);
+    console.error("Submit feedback error:", error);
     res.status(500).json({
       success: false,
-      message: 'Internal server error',
-      error: error.message
+      message: "Internal server error",
+      error: error.message,
     });
   }
 });
