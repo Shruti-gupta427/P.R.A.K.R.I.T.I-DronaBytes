@@ -46,10 +46,10 @@ const userSchema = new mongoose.Schema({
       type: Number,
       default: 0
     },
-    badges: [{
-      type: mongoose.Schema.Types.ObjectId,
-      ref: 'Badge'
-    }],
+    badges: {
+      type: [String],
+      default: []
+    },
     streak: {
       current: {
         type: Number,

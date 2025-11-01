@@ -110,7 +110,7 @@ router.post('/login', async (req, res) => {
 // Get current user profile
 router.get('/me', auth, async (req, res) => {
   try {
-    const user = await User.findById(req.userId).populate('profile.badges');
+    const user = await User.findById(req.userId);
     if (!user) {
       return res.status(404).json({
         success: false,
