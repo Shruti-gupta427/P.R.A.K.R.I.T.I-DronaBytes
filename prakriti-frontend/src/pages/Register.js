@@ -11,10 +11,16 @@ import {
   Alert 
 } from '@mui/material';
 
-const Login = () => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const Register = () => {
+  const [formData, setFormData] = useState({
+    username: '',
+    email: '',
+    password: '',
+    firstName: '',
+    lastName: ''
+  });
   const [error, setError] = useState('');
-  const { loginUser } = useAuth();
+  const { registerUser } = useAuth();
   const navigate = useNavigate();
 
   const handleChange = (e) => {
@@ -25,11 +31,11 @@ const Login = () => {
     e.preventDefault();
     setError('');
     
-    const result = await loginUser(formData.email, formData.password);
+    const result = await registerUser(formData);
     if (result.success) {
       navigate('/dashboard');
     } else {
-      setError(result.message || 'Invalid credentials');
+      setError(result.message || 'Registration failed');
     }
   };
 
@@ -38,7 +44,7 @@ const Login = () => {
       <Box sx={{ mt: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
         <Paper elevation={3} sx={{ padding: 3, width: '100%' }}>
           <Typography component="h1" variant="h5" gutterBottom>
-            Login to PRAKRITI
+            Register to PRAKRITI
           </Typography>
           {error && (
             <Alert severity="error" sx={{ mt: 2 }}>{error}</Alert>
@@ -48,10 +54,37 @@ const Login = () => {
               margin="normal"
               required
               fullWidth
+              label="Username"
+              name="username"
+              value={formData.username}
+              onChange={handleChange}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
               label="Email"
               name="email"
               type="email"
               value={formData.email}
+              onChange={handleChange}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="First Name"
+              name="firstName"
+              value={formData.firstName}
+              onChange={handleChange}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              label="Last Name"
+              name="lastName"
+              value={formData.lastName}
               onChange={handleChange}
             />
             <TextField
@@ -70,11 +103,11 @@ const Login = () => {
               variant="contained"
               sx={{ mt: 3, mb: 2 }}
             >
-              Login
+              Register
             </Button>
-            <Link to="/register" style={{ textDecoration: 'none' }}>
+            <Link to="/login" style={{ textDecoration: 'none' }}>
               <Typography variant="body2" textAlign="center" color="primary">
-                Don't have an account? Register
+                Already have an account? Login
               </Typography>
             </Link>
           </Box>
@@ -84,4 +117,4 @@ const Login = () => {
   );
 };
 
-export default Login;
+export default Register;
