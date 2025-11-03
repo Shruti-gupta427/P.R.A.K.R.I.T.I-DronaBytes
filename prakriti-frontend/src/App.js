@@ -7,7 +7,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Tasks from './pages/Tasks';
-import Complaints from './pages/Complaints';
+import Complaints from './pages/Complaint';
 import Leaderboard from './pages/Leaderboard';
 import Profile from './pages/Profile';
 import './App.css';
