@@ -118,7 +118,9 @@ router.post('/', auth, async (req, res) => {
 });
 
 // Submit task completion
-router.post('/:id/submit', auth, async (req, res) => {
+const { uploadMultiple } = require('../middleware/upload');
+
+router.post('/:id/submit', auth, uploadMultiple, async (req, res) => {
   try {
     const task = await Task.findById(req.params.id);
     if (!task) {
@@ -127,8 +129,6 @@ router.post('/:id/submit', auth, async (req, res) => {
         message: 'Task not found'
       });
     }
-
-    const { images, description, location } = req.body;
 
     // Check if user already submitted
     const existingSubmission = task.submissions.find(
@@ -142,15 +142,42 @@ router.post('/:id/submit', auth, async (req, res) => {
       });
     }
 
+    // Get uploaded image URLs
+    const imageUrls = req.files ? req.files.map(file => `/uploads/${file.filename}`) : [];
+    const { description, location } = req.body;
+
+    // Parse location if it's a string
+    let locationData = null;
+    if (location) {
+      try {
+        locationData = typeof location === 'string' ? JSON.parse(location) : location;
+      } catch (e) {
+        locationData = null;
+      }
+    }
+
     // Add submission
     task.submissions.push({
       user: req.userId,
-      images,
+      images: imageUrls,
       description,
-      location
+      location: locationData
     });
 
+    await task.save();
     await task.updateStatistics();
+
+    // Send real-time notification
+    const { sendNotificationToUser } = require('../socket');
+    try {
+      sendNotificationToUser(req.userId, {
+        type: 'task_submitted',
+        message: `Your submission for "${task.title}" has been received and is pending verification.`,
+        taskId: task._id
+      });
+    } catch (err) {
+      console.error('Socket notification error:', err);
+    }
 
     res.json({
       success: true,
