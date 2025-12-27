@@ -1,0 +1,313 @@
+/* GTA V + Anime Theme - Shared Styles */
+
+@keyframes gradientShift {
+  0%, 100% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+}
+
+@keyframes neonPulse {
+  0%, 100% {
+    opacity: 0.3;
+    box-shadow: 0 0 5px rgba(0, 255, 255, 0.5);
+  }
+  50% {
+    opacity: 0.8;
+    box-shadow: 0 0 20px rgba(0, 255, 255, 0.8), 0 0 30px rgba(255, 0, 255, 0.6);
+  }
+}
+
+@keyframes particleFloat {
+  0% {
+    transform: translateY(100vh) translateX(0) rotate(0deg);
+    opacity: 0;
+  }
+  10% {
+    opacity: 1;
+  }
+  90% {
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-100px) translateX(100px) rotate(360deg);
+    opacity: 0;
+  }
+}
+
+@keyframes cityscapeMove {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50px);
+  }
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Theme Background */
+.theme-background {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #0a0a0a 0%, #1a0a2e 50%, #16213e 100%);
+  padding: 20px;
+}
+
+.theme-animated-bg {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.theme-cityscape {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 200%;
+  height: 40%;
+  background: linear-gradient(to top, #1a1a2e 0%, transparent 100%);
+  background-image: 
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 50px,
+      rgba(0, 255, 255, 0.1) 50px,
+      rgba(0, 255, 255, 0.1) 52px
+    );
+  animation: cityscapeMove 20s linear infinite;
+  clip-path: polygon(
+    0% 100%, 5% 80%, 10% 90%, 15% 70%, 20% 85%, 25% 75%, 
+    30% 95%, 35% 65%, 40% 80%, 45% 70%, 50% 90%, 55% 75%,
+    60% 85%, 65% 70%, 70% 95%, 75% 65%, 80% 85%, 85% 75%,
+    90% 90%, 95% 70%, 100% 80%, 100% 100%
+  );
+}
+
+.theme-neon-grid {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: 
+    linear-gradient(rgba(0, 255, 255, 0.1) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(0, 255, 255, 0.1) 1px, transparent 1px);
+  background-size: 50px 50px;
+  animation: neonPulse 3s ease-in-out infinite;
+}
+
+.theme-particles {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+}
+
+.theme-particle {
+  position: absolute;
+  width: 4px;
+  height: 4px;
+  background: radial-gradient(circle, #00ffff, #ff00ff);
+  border-radius: 50%;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8), 0 0 20px rgba(255, 0, 255, 0.6);
+  animation: particleFloat linear infinite;
+}
+
+/* Theme Cards */
+.theme-card {
+  background: rgba(10, 10, 20, 0.85);
+  backdrop-filter: blur(20px);
+  border: 2px solid rgba(0, 255, 255, 0.3);
+  border-radius: 20px;
+  padding: 30px;
+  box-shadow: 
+    0 0 30px rgba(0, 255, 255, 0.3),
+    0 0 60px rgba(255, 0, 255, 0.2),
+    inset 0 0 30px rgba(0, 255, 255, 0.1);
+  position: relative;
+  animation: slideIn 0.5s ease-out;
+  transition: all 0.3s ease;
+}
+
+.theme-card:hover {
+  border-color: rgba(255, 0, 255, 0.6);
+  box-shadow: 
+    0 0 40px rgba(0, 255, 255, 0.5),
+    0 0 80px rgba(255, 0, 255, 0.3),
+    inset 0 0 40px rgba(0, 255, 255, 0.15);
+  transform: translateY(-5px);
+}
+
+.theme-card::before {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: -2px;
+  right: -2px;
+  bottom: -2px;
+  background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff, #00ffff);
+  border-radius: 20px;
+  z-index: -1;
+  opacity: 0.3;
+  animation: gradientShift 3s ease infinite;
+}
+
+/* Theme Typography */
+.theme-title {
+  background: linear-gradient(45deg, #ff00ff, #00ffff, #ff00ff);
+  background-size: 200% 200%;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: gradientShift 3s ease infinite;
+  font-weight: 900;
+  text-shadow: 0 0 30px rgba(255, 0, 255, 0.5);
+  letter-spacing: 2px;
+}
+
+.theme-subtitle {
+  color: #00ffff;
+  text-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  font-weight: 600;
+  letter-spacing: 2px;
+}
+
+.title-underline {
+  width: 100px;
+  height: 3px;
+  background: linear-gradient(90deg, transparent, #00ffff, #ff00ff, #00ffff, transparent);
+  margin: 15px auto;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8);
+  animation: neonPulse 2s ease-in-out infinite;
+}
+
+/* Theme Buttons */
+.theme-button {
+  background: linear-gradient(45deg, #ff00ff, #00ffff) !important;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.6), 0 0 40px rgba(0, 255, 255, 0.4) !important;
+  border: 2px solid transparent !important;
+  color: white !important;
+  font-weight: 700 !important;
+  letter-spacing: 2px !important;
+  text-transform: uppercase !important;
+  transition: all 0.3s ease !important;
+}
+
+.theme-button:hover {
+  background: linear-gradient(45deg, #00ffff, #ff00ff) !important;
+  box-shadow: 0 0 30px rgba(255, 0, 255, 0.8), 0 0 60px rgba(0, 255, 255, 0.6) !important;
+  transform: translateY(-2px) !important;
+}
+
+/* Theme Inputs */
+.theme-input .MuiOutlinedInput-root {
+  color: #fff !important;
+  background: rgba(10, 10, 20, 0.5) !important;
+}
+
+.theme-input .MuiOutlinedInput-root fieldset {
+  border-color: #00ffff !important;
+  border-width: 2px !important;
+}
+
+.theme-input .MuiOutlinedInput-root:hover fieldset {
+  border-color: #ff00ff !important;
+  box-shadow: 0 0 15px rgba(0, 255, 255, 0.5) !important;
+}
+
+.theme-input .MuiOutlinedInput-root.Mui-focused fieldset {
+  border-color: #ff00ff !important;
+  box-shadow: 0 0 20px rgba(255, 0, 255, 0.8) !important;
+}
+
+.theme-input .MuiInputLabel-root {
+  color: #00ffff !important;
+}
+
+.theme-input .MuiInputLabel-root.Mui-focused {
+  color: #ff00ff !important;
+}
+
+/* Theme Content Wrapper */
+.theme-content {
+  position: relative;
+  z-index: 1;
+  min-height: calc(100vh - 100px);
+}
+
+/* Theme Chips/Badges */
+.theme-chip {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border: 1px solid rgba(0, 255, 255, 0.5) !important;
+  color: #00ffff !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.8) !important;
+  font-weight: 600 !important;
+}
+
+.theme-chip-primary {
+  background: rgba(255, 0, 255, 0.2) !important;
+  border: 1px solid rgba(255, 0, 255, 0.5) !important;
+  color: #ff00ff !important;
+  text-shadow: 0 0 5px rgba(255, 0, 255, 0.8) !important;
+}
+
+/* Theme Progress Bars */
+.theme-progress {
+  background: rgba(0, 255, 255, 0.2) !important;
+  border-radius: 10px !important;
+  height: 10px !important;
+}
+
+.theme-progress .MuiLinearProgress-bar {
+  background: linear-gradient(90deg, #ff00ff, #00ffff) !important;
+  border-radius: 10px !important;
+  box-shadow: 0 0 10px rgba(0, 255, 255, 0.8) !important;
+}
+
+/* Theme Table */
+.theme-table {
+  background: rgba(10, 10, 20, 0.85) !important;
+  backdrop-filter: blur(20px) !important;
+}
+
+.theme-table .MuiTableCell-head {
+  color: #00ffff !important;
+  font-weight: 700 !important;
+  text-shadow: 0 0 5px rgba(0, 255, 255, 0.8) !important;
+  border-bottom: 2px solid rgba(0, 255, 255, 0.3) !important;
+}
+
+.theme-table .MuiTableCell-body {
+  color: #fff !important;
+  border-bottom: 1px solid rgba(0, 255, 255, 0.1) !important;
+}
+
+.theme-table .MuiTableRow-root:hover {
+  background: rgba(0, 255, 255, 0.1) !important;
+}
+
+/* Responsive */
+@media (max-width: 600px) {
+  .theme-card {
+    padding: 20px;
+  }
+}
+
