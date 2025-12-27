@@ -16,12 +16,10 @@ var complaintsRouter = require('./routes/complaints');
 var app = express();
 
 // MongoDB connection
-mongoose.connect(process.env.MONGODB_URI || 'mongodb://localhost:27017/prakriti', {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-.then(() => console.log('MongoDB connected successfully'))
-.catch(err => console.error('MongoDB connection error:', err));
+const mongoURI = process.env.MONGODB_URI || 'mongodb://localhost:27017/prakriti';
+mongoose.connect(mongoURI)
+  .then(() => console.log('MongoDB connected successfully'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
 // CORS configuration
 app.use(cors({
